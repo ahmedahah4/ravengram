@@ -194,6 +194,8 @@ extend-exclude = [
     "pyrogram/raw/types",
     "pyrogram/raw/all.py",
     "pyrogram/errors/exceptions",
+    # A standalone CI script, not a package member: no `__init__.py` belongs next to it.
+    ".github/scripts",
 ]
 
 [tool.ruff.format]
