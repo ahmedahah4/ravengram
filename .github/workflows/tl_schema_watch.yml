@@ -2,8 +2,10 @@ name: TL schema watch
 
 # Telegram doesn't publish schema updates on a feed; tdesktop's api.tl is the closest
 #  thing to one (compiler/api/source/main_api.tl already cites it as its source). This
-#  polls that file daily so a new Telegram feature shows up as an issue here within a
-#  day, instead of waiting on whenever this fork's maintainer next happens to check.
+#  polls that file daily, and when it moves, mechanically splices the new body into the
+#  curated schema (see .github/scripts/sync_tl_schema.py for why that's safe) and opens
+#  a PR instead of pushing straight to master, so CI and a diff still get a look before
+#  anything ships.
 on:
   schedule:
     - cron: "0 7 * * *"
@@ -11,35 +13,100 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
   issues: write
 
 jobs:
-  watch:
+  sync:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: Check upstream api.tl for drift
-        id: check
-        run: python .github/scripts/check_tl_schema.py
+      - name: Sync schema from upstream api.tl
+        id: sync
+        run: python .github/scripts/sync_tl_schema.py
 
-      # Only the snapshot moves here, never `compiler/api/source/main_api.tl`: that
-      #  file is hand-curated and merging into it needs a human, not this job.
-      - name: Commit updated snapshot
-        if: steps.check.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add compiler/api/upstream_snapshot/api.tl
-          git commit -m "chore(tl-schema): sync upstream api.tl snapshot"
-          git push
-
-      - name: Open an issue with the diff
-        if: steps.check.outputs.changed == 'true'
+      # The anchor line the script splices on disappeared, meaning upstream (or the
+      #  curated header) restructured enough that a human has to re-derive the split
+      #  point. Nothing was written in that case, so just flag it.
+      - name: Flag anchor line missing
+        if: steps.sync.outputs.anchor_missing == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
-            --title "Upstream TL schema changed ($(date -u +%Y-%m-%d))" \
-            --body "$(printf 'tdesktop'"'"'s `api.tl` moved since the last check. Compare against `compiler/api/source/main_api.tl` and merge in whatever applies (updating the raw layer via `make api` after), keeping the existing `// Parsed manually` / `// Not used` annotations intact.\n\n```diff\n%s\n```\n' "$(cat tl_schema_diff.txt)")"
+            --title "TL schema sync: anchor line not found" \
+            --body "compiler/api/source/main_api.tl and tdesktop's api.tl no longer share the \`inputPeerEmpty\` anchor line that .github/scripts/sync_tl_schema.py splices on. Re-derive the split point by hand (see the script's docstring) before the next scheduled run."
+
+      - name: Set up uv
+        if: steps.sync.outputs.changed == 'true'
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        if: steps.sync.outputs.changed == 'true'
+        run: make sync
+
+      # These three run best-effort: a failure here is exactly the kind of thing the PR
+      #  needs to surface, not a reason to silently skip opening it.
+      - name: Regenerate the raw API layer
+        id: api
+        if: steps.sync.outputs.changed == 'true'
+        continue-on-error: true
+        run: make api
+
+      - name: Lint
+        id: lint
+        if: steps.sync.outputs.changed == 'true'
+        continue-on-error: true
+        run: make lint
+
+      - name: Typecheck
+        id: typecheck
+        if: steps.sync.outputs.changed == 'true'
+        continue-on-error: true
+        run: make typecheck
+
+      - name: Open a PR with the synced schema
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_OUTCOME: ${{ steps.api.outcome }}
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+        run: |
+          branch="tl-schema-sync-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add compiler/api/source/main_api.tl compiler/api/upstream_snapshot/api.tl
+          git commit -m "chore(tl-schema): sync main_api.tl from upstream api.tl"
+          git push -u origin "$branch"
+
+          API_STATUS="passed"
+          [ "$API_OUTCOME" = "success" ] || API_STATUS="FAILED - needs a look before merging"
+          LINT_STATUS="passed"
+          [ "$LINT_OUTCOME" = "success" ] || LINT_STATUS="FAILED - needs a look before merging"
+          TYPECHECK_STATUS="passed"
+          [ "$TYPECHECK_OUTCOME" = "success" ] || TYPECHECK_STATUS="FAILED - needs a look before merging"
+
+          {
+            echo "tdesktop's \`api.tl\` moved since the last sync. \`.github/scripts/sync_tl_schema.py\`"
+            echo "spliced the new body onto the existing hand-curated header (left untouched) and"
+            echo "updated the drift snapshot; nothing here was written by hand."
+            echo ""
+            echo "Automated checks in this run:"
+            echo "- \`make api\`: $API_STATUS"
+            echo "- \`make lint\`: $LINT_STATUS"
+            echo "- \`make typecheck\`: $TYPECHECK_STATUS"
+            echo ""
+            echo "These don't catch everything - a schema change can rename or drop something a"
+            echo "\`pyrogram/methods/*\` file still calls by name without failing typecheck. Skim"
+            echo "the diff and run the test suite before merging."
+          } > /tmp/pr_body.md
+
+          gh pr create \
+            --title "chore(tl-schema): sync main_api.tl from upstream api.tl" \
+            --body-file /tmp/pr_body.md
