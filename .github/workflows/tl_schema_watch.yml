@@ -1,0 +1,45 @@
+name: TL schema watch
+
+# Telegram doesn't publish schema updates on a feed; tdesktop's api.tl is the closest
+#  thing to one (compiler/api/source/main_api.tl already cites it as its source). This
+#  polls that file daily so a new Telegram feature shows up as an issue here within a
+#  day, instead of waiting on whenever this fork's maintainer next happens to check.
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check upstream api.tl for drift
+        id: check
+        run: python .github/scripts/check_tl_schema.py
+
+      # Only the snapshot moves here, never `compiler/api/source/main_api.tl`: that
+      #  file is hand-curated and merging into it needs a human, not this job.
+      - name: Commit updated snapshot
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add compiler/api/upstream_snapshot/api.tl
+          git commit -m "chore(tl-schema): sync upstream api.tl snapshot"
+          git push
+
+      - name: Open an issue with the diff
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Upstream TL schema changed ($(date -u +%Y-%m-%d))" \
+            --body "$(printf 'tdesktop'"'"'s `api.tl` moved since the last check. Compare against `compiler/api/source/main_api.tl` and merge in whatever applies (updating the raw layer via `make api` after), keeping the existing `// Parsed manually` / `// Not used` annotations intact.\n\n```diff\n%s\n```\n' "$(cat tl_schema_diff.txt)")"

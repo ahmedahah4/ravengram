@@ -8,6 +8,7 @@ config.ini
 main.py
 unknown_errors.txt
 .DS_Store
+tl_schema_diff.txt
 
 # Pyrogram generated code
 pyrogram/errors/exceptions/
