@@ -1,0 +1,154 @@
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#
+#  This file is part of Pyrogram.
+#
+#  Pyrogram is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Pyrogram is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import annotations as _annotations
+
+from pyrogram import raw
+
+from ..object import Object
+
+
+class Location(Object):
+    """A point on the map.
+
+    Parameters:
+        longitude (``float``, *optional*):
+            Longitude as defined by sender.
+
+        latitude (``float``, *optional*):
+            Latitude as defined by sender.
+
+        accuracy_radius (``int``, *optional*):
+            The estimated horizontal accuracy of the location, in meters as defined by the sender.
+
+        address (``str``, *optional*):
+            Textual description of the address (mandatory).
+
+        live_period (``int``, *optional*):
+            For live locations, the time relative to the message send date, for which the location can be updated, in seconds.
+
+        heading (``int``, *optional*):
+            For live locations, a direction in which the location moves, in degrees; 1-360.
+
+        proximity_alert_radius (``int``, *optional*):
+            For live locations, a maximum distance to another chat member for proximity alerts, in meters (0-100000).
+    """
+
+    def __init__(
+        self,
+        *,
+        longitude: float | None = None,
+        latitude: float | None = None,
+        accuracy_radius: int | None = None,
+        address: str | None = None,
+        live_period: int | None = None,
+        heading: int | None = None,
+        proximity_alert_radius: int | None = None,
+    ):
+        super().__init__()
+
+        self.longitude = longitude
+        self.latitude = latitude
+        self.accuracy_radius = accuracy_radius
+        self.address = address
+        self.live_period = live_period
+        self.heading = heading
+        self.proximity_alert_radius = proximity_alert_radius
+
+    @staticmethod
+    def _parse(
+        geo_point: raw.base.GeoPoint | raw.base.BusinessLocation | raw.base.MessageMedia,
+    ) -> Location | None:
+        if isinstance(geo_point, raw.types.GeoPoint):
+            return Location._parse_geo_point(geo_point)
+
+        if isinstance(geo_point, raw.types.BusinessLocation):
+            return Location._parse_business(geo_point)
+
+        if isinstance(geo_point, raw.types.MessageMediaGeoLive):
+            return Location._parse_media(geo_point)
+
+    @staticmethod
+    def _parse_geo_point(geo_point: raw.types.GeoPoint) -> Location | None:
+        if isinstance(geo_point, raw.types.GeoPoint):
+            return Location(
+                longitude=geo_point.long,
+                latitude=geo_point.lat,
+                accuracy_radius=geo_point.accuracy_radius,
+            )
+
+    @staticmethod
+    def _parse_business(location: raw.types.BusinessLocation) -> Location | None:
+        if isinstance(location, raw.types.BusinessLocation):
+            longitude = None
+            latitude = None
+            accuracy_radius = None
+
+            if isinstance(location.geo_point, raw.types.GeoPoint):
+                longitude = location.geo_point.long
+                latitude = location.geo_point.lat
+                accuracy_radius = location.geo_point.accuracy_radius
+
+            return Location(
+                longitude=longitude,
+                latitude=latitude,
+                accuracy_radius=accuracy_radius,
+                address=location.address,
+            )
+
+    @staticmethod
+    def _parse_media(media: raw.types.MessageMediaGeoLive) -> Location | None:
+        if isinstance(media, raw.types.MessageMediaGeoLive):
+            longitude = None
+            latitude = None
+            accuracy_radius = None
+
+            if isinstance(media.geo, raw.types.GeoPoint):
+                longitude = media.geo.long
+                latitude = media.geo.lat
+                accuracy_radius = media.geo.accuracy_radius
+
+            return Location(
+                longitude=longitude,
+                latitude=latitude,
+                accuracy_radius=accuracy_radius,
+                live_period=media.period,
+                heading=media.heading,
+                proximity_alert_radius=media.proximity_notification_radius,
+            )
+
+    async def write(self, **kwargs) -> raw.types.InputMediaGeoPoint | raw.types.InputMediaGeoLive:
+        if self.live_period is not None:
+            return raw.types.InputMediaGeoLive(
+                geo_point=raw.types.InputGeoPoint(
+                    lat=self.latitude or 0,
+                    long=self.longitude or 0,
+                    accuracy_radius=self.accuracy_radius,
+                ),
+                heading=self.heading,
+                period=self.live_period,
+                proximity_notification_radius=self.proximity_alert_radius,
+            )
+
+        return raw.types.InputMediaGeoPoint(
+            geo_point=raw.types.InputGeoPoint(
+                lat=self.latitude or 0,
+                long=self.longitude or 0,
+                accuracy_radius=self.accuracy_radius,
+            ),
+        )

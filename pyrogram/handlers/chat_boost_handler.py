@@ -1,0 +1,60 @@
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#
+#  This file is part of Pyrogram.
+#
+#  Pyrogram is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Pyrogram is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import annotations as _annotations
+
+from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
+
+from pyrogram import types
+from pyrogram.filters import Filter
+
+from .handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
+
+ChatBoostCallbackType = Callable[["pyrogram.Client", types.ChatBoostUpdated], Any]
+
+
+class ChatBoostHandler(Handler[ChatBoostCallbackType]):
+    """The ChatBoost handler class. Used to handle applied chat boosts.
+    It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+
+    For a nicer way to register this handler, have a look at the
+    :meth:`~pyrogram.Client.on_chat_boost` decorator.
+
+    Parameters:
+        callback (``Callable``):
+            Pass a function that will be called when a new boost applied. It takes *(client, boost)*
+            as positional arguments (look at the section below for a detailed description).
+
+        filters (:obj:`~pyrogram.filters.Filter`):
+            Pass one or more filters to allow only a subset of updates to be passed
+            in your callback function.
+
+    Other parameters:
+        client (:obj:`~pyrogram.Client`):
+            The Client itself, useful when you want to call other API methods inside the handler.
+
+        boost (:obj:`~pyrogram.types.ChatBoostUpdated`):
+            The applied chat boost.
+    """
+
+    def __init__(self, callback: ChatBoostCallbackType, filters: Filter | None = None) -> None:
+        super().__init__(callback, filters)

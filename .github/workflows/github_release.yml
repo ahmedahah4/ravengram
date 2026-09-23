@@ -1,0 +1,39 @@
+name: Upload release to GitHub
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions: write-all
+
+jobs:
+  build-n-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.0.1
+
+      - name: Build package
+        run: make build
+
+      - name: Get package version
+        run: |
+          echo "CURRENT_LIB_VERSION=v$(make version)" >> $GITHUB_ENV
+
+      - name: Create and upload release
+        id: upload-release-asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.CURRENT_LIB_VERSION }}
+          name: ${{ env.CURRENT_LIB_VERSION }}
+          generate_release_notes: true
+          make_latest: true
+          draft: false
+          prerelease: false
+          files: dist/*
