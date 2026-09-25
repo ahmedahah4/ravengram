@@ -67,6 +67,12 @@ Once you push this to your own GitHub repo (see the `Source`/`Issues` URLs in `p
 the command above with a `pip install git+https://github.com/ahmedahah4/ravengram` install, or publish it
 to PyPI under your own package name.
 
+### Website
+
+The project site lives in `website/` (plain HTML/CSS/JS, no build step) and is published to GitHub Pages by
+`.github/workflows/pages.yml` on every push to `master` that touches it. Preview it locally with
+`python -m http.server -d website`.
+
 ### Keeping it up to date with Telegram's API
 
 Telegram's raw API surface lives in the TL schema files under `compiler/api`, and the `pyrogram.raw` layer is
