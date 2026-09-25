@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ravengram</title>
+  <meta name="description" content="Ravengram is an elegant, modern and asynchronous Telegram MTProto API framework in Python for user accounts and bots.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M3 17.5 14.5 6l6 2.5L29 5l-4.5 7.5L27 20l-9 7-3-5.5-6.5 3.5 3-6.5z"/><circle cx="19.5" cy="11" r="1.4" fill="var(--bg)"/></svg>
+      Ravengram
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a class="hide-sm" href="#features">Features</a>
+      <a class="hide-sm" href="#updates">Updates</a>
+      <a href="guide.html">Guide</a>
+      <a href="https://github.com/ahmedahah4/ravengram">GitHub</a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow"><span class="dot"></span>Telegram API Layer 229</div>
+        <h1>Telegram, in <em>elegant</em> async Python.</h1>
+        <p class="lede">
+          Ravengram is a modern MTProto framework for user accounts and bots. It is a drop-in
+          replacement for Pyrogram, with Gifts, Stories, Topics, Business accounts and the rest
+          of Telegram's newest features built in.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href="guide.html">Get started</a>
+          <a class="btn btn-ghost" href="https://github.com/ahmedahah4/ravengram">View on GitHub</a>
+        </div>
+        <div class="install">
+          <span class="prompt">$</span>
+          <span class="cmd" id="install-cmd">pip install git+https://github.com/ahmedahah4/ravengram</span>
+          <button class="copy" type="button" data-copy="install-cmd">Copy</button>
+        </div>
+      </div>
+
+      <div class="code">
+        <div class="code-bar">
+          <span class="lights"><i></i><i></i><i></i></span>
+          main.py
+          <button class="copy" type="button" data-copy="hero-code">Copy</button>
+        </div>
+<pre><code id="hero-code"><span class="k">from</span> pyrogram <span class="k">import</span> Client, filters
+
+app = Client(<span class="s">"my_account"</span>)
+
+
+<span class="d">@app.on_message</span>(filters.private)
+<span class="k">async def</span> <span class="f">hello</span>(client, message):
+    <span class="k">await</span> message.reply(<span class="s">"Hello from Ravengram!"</span>)
+
+
+app.run()</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat"><b>440</b><span>high-level methods</span></div>
+        <div class="stat"><b>318</b><span>high-level types</span></div>
+        <div class="stat"><b>824</b><span>raw API functions</span></div>
+        <div class="stat"><b>3.10–3.14</b><span>supported Python versions</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="kicker">Features</div>
+        <h2>Easy for common tasks, with full access when you need it.</h2>
+        <p>Friendly methods and types for everyday work, with the complete Telegram API one import away.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          <h3>Async first</h3>
+          <p>Built on <code>asyncio</code> from the ground up. It can also be used synchronously when a script is simpler that way.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <h3>Users and bots</h3>
+          <p>Log in as a user account to do anything an official client can, or use a bot token as a faster Bot API alternative.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          <h3>Type-hinted</h3>
+          <p>Every method and type carries hints, so your editor autocompletes arguments and catches mistakes before you run.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <h3>Latest features</h3>
+          <p>Gifts, Stories, forum Topics, Business accounts, paid media, reactions and boosts, with ready-made methods and handlers.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+          <h3>Full raw API</h3>
+          <p>All 824 functions and 1,692 types of the MTProto schema are generated as Python classes and callable with <code>invoke</code>.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <h3>Fast crypto</h3>
+          <p>Install the <code>fast</code> extra to add TgCrypto (C-accelerated encryption) and uvloop.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="examples">
+    <div class="wrap split">
+      <div class="panel-note">
+        <div class="kicker">Examples</div>
+        <h3>Short code for real tasks</h3>
+        <p>Handlers react to updates, filters decide which updates they receive, and client methods do the work.
+          There are 30 handler types, from messages to reactions to business messages.</p>
+        <p><a href="guide.html">Read the full guide →</a></p>
+      </div>
+
+      <div>
+        <div class="tabs" role="tablist" aria-label="Code examples">
+          <button class="tab" role="tab" id="t-bot" aria-controls="p-bot" aria-selected="true">Bot</button>
+          <button class="tab" role="tab" id="t-user" aria-controls="p-user" aria-selected="false" tabindex="-1">User account</button>
+          <button class="tab" role="tab" id="t-raw" aria-controls="p-raw" aria-selected="false" tabindex="-1">Raw API</button>
+          <button class="tab" role="tab" id="t-sync" aria-controls="p-sync" aria-selected="false" tabindex="-1">Sync</button>
+        </div>
+
+        <div class="panel code" role="tabpanel" id="p-bot" aria-labelledby="t-bot">
+          <div class="code-bar"><span class="lights"><i></i><i></i><i></i></span>bot.py
+            <button class="copy" type="button" data-copy="c-bot">Copy</button></div>
+<pre><code id="c-bot"><span class="k">from</span> pyrogram <span class="k">import</span> Client, filters
+
+app = Client(
+    <span class="s">"my_bot"</span>,
+    api_id=<span class="n">12345</span>,
+    api_hash=<span class="s">"0123456789abcdef0123456789abcdef"</span>,
+    bot_token=<span class="s">"123456:ABC-DEF..."</span>,
+)
+
+
+<span class="d">@app.on_message</span>(filters.command(<span class="s">"start"</span>))
+<span class="k">async def</span> <span class="f">start</span>(client, message):
+    <span class="k">await</span> message.reply(<span class="s">f"Hi </span>{message.from_user.first_name}<span class="s">!"</span>)
+
+
+<span class="d">@app.on_message</span>(filters.photo)
+<span class="k">async def</span> <span class="f">photo</span>(client, message):
+    <span class="k">await</span> message.reply(<span class="s">"Nice picture."</span>)
+
+
+app.run()</code></pre>
+        </div>
+
+        <div class="panel code" role="tabpanel" id="p-user" aria-labelledby="t-user" hidden>
+          <div class="code-bar"><span class="lights"><i></i><i></i><i></i></span>userbot.py
+            <button class="copy" type="button" data-copy="c-user">Copy</button></div>
+<pre><code id="c-user"><span class="k">import</span> asyncio
+<span class="k">from</span> pyrogram <span class="k">import</span> Client
+
+
+<span class="k">async def</span> <span class="f">main</span>():
+    <span class="k">async with</span> Client(<span class="s">"my_account"</span>) <span class="k">as</span> app:
+        <span class="c"># Read the last 10 messages of your Saved Messages</span>
+        <span class="k">async for</span> msg <span class="k">in</span> app.get_chat_history(<span class="s">"me"</span>, limit=<span class="n">10</span>):
+            print(msg.text)
+
+        <span class="c"># Post a story</span>
+        <span class="k">await</span> app.send_story(<span class="s">"me"</span>, <span class="s">"sunset.jpg"</span>, caption=<span class="s">"Evening"</span>)
+
+
+asyncio.run(main())</code></pre>
+        </div>
+
+        <div class="panel code" role="tabpanel" id="p-raw" aria-labelledby="t-raw" hidden>
+          <div class="code-bar"><span class="lights"><i></i><i></i><i></i></span>raw.py
+            <button class="copy" type="button" data-copy="c-raw">Copy</button></div>
+<pre><code id="c-raw"><span class="k">import</span> asyncio
+<span class="k">from</span> pyrogram <span class="k">import</span> Client, raw
+
+
+<span class="k">async def</span> <span class="f">main</span>():
+    <span class="k">async with</span> Client(<span class="s">"my_account"</span>) <span class="k">as</span> app:
+        <span class="c"># Any method in the Telegram schema, even without a wrapper</span>
+        config = <span class="k">await</span> app.invoke(raw.functions.help.GetConfig())
+        print(config.dc_options[<span class="n">0</span>])
+
+
+asyncio.run(main())</code></pre>
+        </div>
+
+        <div class="panel code" role="tabpanel" id="p-sync" aria-labelledby="t-sync" hidden>
+          <div class="code-bar"><span class="lights"><i></i><i></i><i></i></span>script.py
+            <button class="copy" type="button" data-copy="c-sync">Copy</button></div>
+<pre><code id="c-sync"><span class="k">from</span> pyrogram <span class="k">import</span> Client
+
+<span class="c"># No async needed for quick scripts</span>
+<span class="k">with</span> Client(<span class="s">"my_account"</span>) <span class="k">as</span> app:
+    me = app.get_me()
+    app.send_message(<span class="s">"me"</span>, <span class="s">f"Logged in as </span>{me.first_name}<span class="s">"</span>)</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="updates">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="kicker">Staying current</div>
+        <h2>Telegram schema changes arrive as a pull request.</h2>
+        <p>
+          The low-level API is generated from Telegram's schema. A daily workflow checks for changes
+          and prepares the update, so the library doesn't depend on anyone else's release schedule.
+        </p>
+      </div>
+
+      <div class="pipeline">
+        <div class="step">
+          <h3>Watch</h3>
+          <p>Every day, a GitHub Actions workflow compares Telegram Desktop's <code>api.tl</code> to the last snapshot.</p>
+        </div>
+        <div class="step">
+          <h3>Sync</h3>
+          <p>If the schema changed, the new definitions are copied into the local schema file.</p>
+        </div>
+        <div class="step">
+          <h3>Rebuild and check</h3>
+          <p>The raw API layer is regenerated, then lint and typecheck run against it.</p>
+        </div>
+        <div class="step">
+          <h3>Review</h3>
+          <p>The workflow opens a pull request. A person reviews and merges it before any release.</p>
+        </div>
+      </div>
+
+      <p class="callout">
+        New Telegram features are usable through <code>raw</code> as soon as the pull request is merged.
+        Friendly methods like <code>app.send_gift()</code> are written by hand afterwards.
+      </p>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>Start building in a few minutes.</h2>
+      <p>Get API credentials from Telegram, install Ravengram, and run your first script.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="guide.html">Read the guide</a>
+        <a class="btn btn-ghost" href="https://github.com/ahmedahah4/ravengram/issues">Report an issue</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Ravengram is free software under the <a href="https://github.com/ahmedahah4/ravengram/blob/master/COPYING.lesser">GNU LGPL v3</a>.</span>
+    <span>Based on <a href="https://github.com/pyrogram/pyrogram">Pyrogram</a> by Dan. Not affiliated with Telegram.</span>
+  </div>
+</footer>
+
+</body>
+</html>

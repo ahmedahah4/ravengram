@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ravengram Guide</title>
+  <meta name="description" content="Install Ravengram, log in, and write your first Telegram bot or user-account script in Python.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M3 17.5 14.5 6l6 2.5L29 5l-4.5 7.5L27 20l-9 7-3-5.5-6.5 3.5 3-6.5z"/><circle cx="19.5" cy="11" r="1.4" fill="var(--bg)"/></svg>
+      Ravengram
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a class="hide-sm" href="./#features">Features</a>
+      <a class="hide-sm" href="./#updates">Updates</a>
+      <a href="guide.html" aria-current="page">Guide</a>
+      <a href="https://github.com/ahmedahah4/ravengram">GitHub</a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap doc">
+
+  <aside class="toc" aria-label="On this page">
+    <p>On this page</p>
+    <ol>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#credentials">API credentials</a></li>
+      <li><a href="#first-run">Your first script</a></li>
+      <li><a href="#bots">Running a bot</a></li>
+      <li><a href="#handlers">Handlers and filters</a></li>
+      <li><a href="#raw">The raw API</a></li>
+      <li><a href="#sessions">Sessions</a></li>
+      <li><a href="#pyrogram">Coming from Pyrogram</a></li>
+      <li><a href="#updating">Staying up to date</a></li>
+    </ol>
+  </aside>
+
+  <article class="prose">
+    <h1>Getting started</h1>
+    <p class="lede">This guide takes you from installing Ravengram to a working bot or user-account script.
+      It assumes you know basic Python and <code>async</code>/<code>await</code>.</p>
+
+    <h2 id="install">Install</h2>
+    <p>Ravengram needs Python 3.10 or newer. It isn't on PyPI yet, so install it from GitHub:</p>
+    <div class="code">
+      <div class="code-bar">shell<button class="copy" type="button" data-copy="g-install">Copy</button></div>
+<pre><code id="g-install">pip install git+https://github.com/ahmedahah4/ravengram</code></pre>
+    </div>
+    <p>Two optional extras are available:</p>
+    <div class="code">
+      <div class="code-bar">shell<button class="copy" type="button" data-copy="g-extras">Copy</button></div>
+<pre><code id="g-extras"><span class="c"># TgCrypto (C-accelerated encryption) and uvloop</span>
+pip install <span class="s">"ravengram[fast] @ git+https://github.com/ahmedahah4/ravengram"</span>
+
+<span class="c"># Log in by scanning a QR code</span>
+pip install <span class="s">"ravengram[qrcode] @ git+https://github.com/ahmedahah4/ravengram"</span></code></pre>
+    </div>
+    <p>The package installs as <code>pyrogram</code>, so you import it with <code>from pyrogram import ...</code>.
+      See <a href="#pyrogram">Coming from Pyrogram</a> for what that means.</p>
+
+    <h2 id="credentials">API credentials</h2>
+    <p>Every Telegram client identifies itself with an <strong>API ID</strong> and <strong>API hash</strong>.
+      Getting them is free:</p>
+    <ol>
+      <li>Log in at <a href="https://my.telegram.org/apps">my.telegram.org/apps</a> with your phone number.</li>
+      <li>Fill in the <em>Create new application</em> form. The app name and short name can be anything.</li>
+      <li>Copy the <code>api_id</code> (a number) and <code>api_hash</code> (a 32-character string).</li>
+    </ol>
+    <p>Treat the API hash like a password. Keep it out of public repositories, for example by reading it from an environment variable.</p>
+
+    <h2 id="first-run">Your first script</h2>
+    <p>This script logs in with your own account and sends a message to your Saved Messages:</p>
+    <div class="code">
+      <div class="code-bar">hello.py<button class="copy" type="button" data-copy="g-first">Copy</button></div>
+<pre><code id="g-first"><span class="k">import</span> asyncio
+<span class="k">from</span> pyrogram <span class="k">import</span> Client
+
+api_id = <span class="n">12345</span>
+api_hash = <span class="s">"0123456789abcdef0123456789abcdef"</span>
+
+
+<span class="k">async def</span> <span class="f">main</span>():
+    <span class="k">async with</span> Client(<span class="s">"my_account"</span>, api_id, api_hash) <span class="k">as</span> app:
+        <span class="k">await</span> app.send_message(<span class="s">"me"</span>, <span class="s">"Greetings from Ravengram!"</span>)
+
+
+asyncio.run(main())</code></pre>
+    </div>
+    <p>The first time you run it, Ravengram asks for your phone number and the login code Telegram sends you,
+      then saves the login to <code>my_account.session</code>. Later runs reuse that file, so you won't be asked again
+      and you can leave out <code>api_id</code> and <code>api_hash</code>.</p>
+
+    <h2 id="bots">Running a bot</h2>
+    <p>Create a bot with <a href="https://t.me/BotFather">@BotFather</a> to get a bot token, then pass it as
+      <code>bot_token</code>. Bots still need an API ID and hash.</p>
+    <div class="code">
+      <div class="code-bar">echo_bot.py<button class="copy" type="button" data-copy="g-bot">Copy</button></div>
+<pre><code id="g-bot"><span class="k">from</span> pyrogram <span class="k">import</span> Client, filters
+
+app = Client(
+    <span class="s">"echo_bot"</span>,
+    api_id=<span class="n">12345</span>,
+    api_hash=<span class="s">"0123456789abcdef0123456789abcdef"</span>,
+    bot_token=<span class="s">"123456:ABC-DEF..."</span>,
+)
+
+
+<span class="d">@app.on_message</span>(filters.command(<span class="s">"start"</span>))
+<span class="k">async def</span> <span class="f">start</span>(client, message):
+    <span class="k">await</span> message.reply(<span class="s">"Send me anything and I'll echo it back."</span>)
+
+
+<span class="d">@app.on_message</span>(filters.text &amp; filters.private)
+<span class="k">async def</span> <span class="f">echo</span>(client, message):
+    <span class="k">await</span> message.reply(message.text)
+
+
+app.run()</code></pre>
+    </div>
+    <p><code>app.run()</code> starts the client, keeps it running until you press Ctrl+C, then stops it cleanly.</p>
+
+    <h2 id="handlers">Handlers and filters</h2>
+    <p>A <strong>handler</strong> is a function that runs when a certain kind of update arrives. You register it with a
+      decorator such as <code>@app.on_message</code>, <code>@app.on_callback_query</code>,
+      <code>@app.on_edited_message</code> or <code>@app.on_message_reaction</code>. There are 30 handler types.</p>
+    <p>A <strong>filter</strong> decides which updates a handler receives. Combine filters with
+      <code>&amp;</code> (and), <code>|</code> (or) and <code>~</code> (not):</p>
+    <div class="code">
+      <div class="code-bar">filters.py<button class="copy" type="button" data-copy="g-filters">Copy</button></div>
+<pre><code id="g-filters"><span class="c"># Photos or videos in groups, but not ones you sent yourself</span>
+<span class="d">@app.on_message</span>((filters.photo | filters.video) &amp; filters.group &amp; ~filters.me)
+<span class="k">async def</span> <span class="f">media</span>(client, message):
+    ...
+
+
+<span class="c"># Messages matching a regular expression</span>
+<span class="d">@app.on_message</span>(filters.regex(<span class="s">r"^hello"</span>))
+<span class="k">async def</span> <span class="f">greet</span>(client, message):
+    ...</code></pre>
+    </div>
+    <p>Some commonly used filters:</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Filter</th><th>Matches</th></tr></thead>
+        <tbody>
+          <tr><td><code>filters.command("x")</code></td><td>Commands such as <code>/x</code></td></tr>
+          <tr><td><code>filters.private</code></td><td>Messages in one-to-one chats</td></tr>
+          <tr><td><code>filters.group</code></td><td>Messages in groups and supergroups</td></tr>
+          <tr><td><code>filters.text</code></td><td>Text messages</td></tr>
+          <tr><td><code>filters.photo</code></td><td>Photo messages</td></tr>
+          <tr><td><code>filters.me</code></td><td>Messages sent by your own account</td></tr>
+          <tr><td><code>filters.incoming</code></td><td>Messages received rather than sent</td></tr>
+          <tr><td><code>filters.regex(p)</code></td><td>Text that matches the pattern <code>p</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="raw">The raw API</h2>
+    <p>High-level methods cover the common tasks. For everything else, every function in Telegram's schema is available
+      under <code>pyrogram.raw.functions</code> and can be sent with <code>app.invoke()</code>:</p>
+    <div class="code">
+      <div class="code-bar">raw_call.py<button class="copy" type="button" data-copy="g-raw">Copy</button></div>
+<pre><code id="g-raw"><span class="k">from</span> pyrogram <span class="k">import</span> raw
+
+config = <span class="k">await</span> app.invoke(raw.functions.help.GetConfig())</code></pre>
+    </div>
+    <p>Raw calls return raw objects from <code>pyrogram.raw.types</code>, which follow Telegram's schema directly.
+      They are less convenient than the high-level types, but let you use any Telegram feature as soon as it's in the schema.
+      To receive raw updates, use <code>@app.on_raw_update()</code>.</p>
+
+    <h2 id="sessions">Sessions</h2>
+    <p>A session holds your login. By default it's a SQLite file named after the client, stored in the working directory.
+      Other options:</p>
+    <ul>
+      <li><code>in_memory=True</code> keeps the session in memory only. Nothing is written to disk and you log in on every run.</li>
+      <li><code>await app.export_session_string()</code> returns the session as a string. Pass it back with
+        <code>session_string="..."</code> to log in without a file, which is useful on servers and in containers.</li>
+      <li><code>workdir="path"</code> changes where session files are stored.</li>
+    </ul>
+    <p class="callout">A session file or string gives full access to the account. Never share it or commit it to a repository.</p>
+
+    <h2 id="pyrogram">Coming from Pyrogram</h2>
+    <p>Ravengram is a drop-in replacement. It installs under the same <code>pyrogram</code> import name and keeps the same API,
+      so most existing code runs without changes. Uninstall <code>pyrogram</code> (or another fork) first, because only one package
+      can own the <code>pyrogram</code> name in an environment.</p>
+
+    <h2 id="updating">Staying up to date</h2>
+    <p>The raw API is generated from Telegram's schema (currently Layer 229). A daily workflow detects schema changes and
+      opens a pull request with the regenerated code. After it's merged, update your install:</p>
+    <div class="code">
+      <div class="code-bar">shell<button class="copy" type="button" data-copy="g-upgrade">Copy</button></div>
+<pre><code id="g-upgrade">pip install --upgrade --force-reinstall git+https://github.com/ahmedahah4/ravengram</code></pre>
+    </div>
+    <p>Found a bug or missing feature? <a href="https://github.com/ahmedahah4/ravengram/issues">Open an issue on GitHub</a>.</p>
+  </article>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Ravengram is free software under the <a href="https://github.com/ahmedahah4/ravengram/blob/master/COPYING.lesser">GNU LGPL v3</a>.</span>
+    <span>Based on <a href="https://github.com/pyrogram/pyrogram">Pyrogram</a> by Dan. Not affiliated with Telegram.</span>
+  </div>
+</footer>
+
+</body>
+</html>
