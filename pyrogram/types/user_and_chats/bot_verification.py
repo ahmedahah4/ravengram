@@ -32,8 +32,10 @@ class BotVerification(Object):
         custom_emoji_id (``str``):
             Custom emoji icon identifier.
 
-        description (``int``, *optional*):
+        description (``str``, *optional*):
             Additional description about the verification.
+            Formatting entities are preserved and available through ``description.html`` and
+            ``description.markdown``.
     """
 
     def __init__(self, *, bot: int, custom_emoji_id: str, description: str):
@@ -51,5 +53,5 @@ class BotVerification(Object):
         return BotVerification(
             bot=await types.User._parse(client, users.get(verification.bot_id)),
             custom_emoji_id=str(verification.icon),
-            description=verification.description,
+            description=(await types.FormattedText._parse(client, verification.description)).text,
         )
