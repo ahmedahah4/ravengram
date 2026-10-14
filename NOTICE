@@ -15,3 +15,12 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+The `pyrogram/calls` package is merged from PyTgCalls:
+
+PyTgCalls - Async client API for the Telegram Calls
+Copyright (C) 2021-present Laky-64 <https://github.com/Laky-64>
+https://github.com/pytgcalls/pytgcalls
+
+PyTgCalls is free software, licensed under the terms of the GNU Lesser General Public
+License v3 or later (LGPLv3+), the same license as the rest of this distribution.

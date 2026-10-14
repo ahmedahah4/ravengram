@@ -35,7 +35,7 @@ from importlib import import_module
 from io import BytesIO
 from mimetypes import MimeTypes
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from collections.abc import AsyncGenerator, Callable, Sequence
 
 import pyrogram
@@ -70,6 +70,9 @@ from .dispatcher import Dispatcher
 from .file_id import FileId, FileType, ThumbnailSource
 from .parser import Parser
 from .session.internals import MsgId
+
+if TYPE_CHECKING:
+    from pyrogram.calls import PyTgCalls
 
 log = logging.getLogger(__name__)
 
@@ -462,6 +465,9 @@ class Client(Methods):
         #  reader: a call arriving from a thread with no loop of its own reaches this one
         #  through `run_coroutine_threadsafe`, which takes the loop as an argument.
         self._loop: asyncio.AbstractEventLoop | None = None
+
+        # Built by the `calls` property, so `ntgcalls` is only loaded once a call is wanted.
+        self._calls: PyTgCalls | None = None
 
         self.__config: raw.types.Config = None
 
@@ -1686,6 +1692,22 @@ class Client(Methods):
             log.info("Changed session DC%s address to %s:%s", dc_id, server_address, port)
         else:
             log.info("Session DC%s address is already %s:%s", dc_id, server_address, port)
+
+    @property
+    def calls(self) -> PyTgCalls:
+        """The voice and video calls of this client, built on first use.
+
+        One :obj:`~pyrogram.calls.PyTgCalls` per client, so every handler and every call
+        shares the same state. ``await app.calls.start()`` also starts the client itself.
+        """
+        if self._calls is None:
+            # Deferred: `ntgcalls` loads a native library, and a client that never touches a
+            #  call should not pay for it on `import pyrogram`.
+            from pyrogram.calls import PyTgCalls  # noqa: PLC0415
+
+            self._calls = PyTgCalls(self)
+
+        return self._calls
 
     @property
     def server_time(self) -> float:

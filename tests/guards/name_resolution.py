@@ -43,6 +43,9 @@ GENERATED: Final[tuple[pathlib.Path, ...]] = (
     PACKAGE_ROOT / "raw" / "types",
     PACKAGE_ROOT / "raw" / "all.py",
     PACKAGE_ROOT / "errors" / "exceptions",
+    # Not generated, but not written here either: merged from PyTgCalls and kept in its
+    #  upstream style, so the sweeps that hold this tree's own conventions skip it too.
+    PACKAGE_ROOT / "calls",
 )
 
 

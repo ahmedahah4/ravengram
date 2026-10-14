@@ -67,6 +67,43 @@ Once you push this to your own GitHub repo (see the `Source`/`Issues` URLs in `p
 the command above with a `pip install git+https://github.com/ahmedahah4/ravengram` install, or publish it
 to PyPI under your own package name.
 
+### Voice and video calls
+
+Calls are built in: [PyTgCalls](https://github.com/pytgcalls/pytgcalls) is part of this package as
+`pyrogram.calls`, so there is nothing else to install and nothing to wire up. Every client has its
+own `calls`:
+
+``` python
+import asyncio
+
+from pyrogram import Client, filters, idle
+from pyrogram.calls import filters as call_filters
+from pyrogram.calls.types import MediaStream, Update
+
+app = Client("my_account")
+
+
+@app.on_message(filters.command("play") & filters.group)
+async def play(client, message):
+    await client.calls.play(message.chat.id, MediaStream("song.mp3"))
+
+
+@app.calls.on_update(call_filters.stream_end())
+async def stream_ended(calls, update: Update):
+    await calls.leave_call(update.chat_id)
+
+
+async def main():
+    await app.calls.start()  # starts the client too
+    await idle()
+
+
+asyncio.run(main())
+```
+
+Code written for the standalone library only needs its imports renamed: `pytgcalls` becomes
+`pyrogram.calls`, and `PyTgCalls(app)` becomes `app.calls`.
+
 ### Website
 
 The project site lives in `website/` (plain HTML/CSS/JS, no build step) and is published to GitHub Pages by

@@ -47,6 +47,11 @@ dependencies = [
     # `tcp.py` builds the proxy as `Proxy(proxy_type=..., host=..., port=...)`, and 2.3.0
     #  and below have no such constructor: `TypeError: Proxy() takes no arguments`.
     "python-socks[asyncio]>=2.4.0",
+    # `pyrogram.calls`, the voice and video calls merged in from PyTgCalls. `ntgcalls` is the
+    #  native call engine and its 4.x is a different API, the one ceiling in this list.
+    #  `aiohttp` is what `pyrogram.calls.CustomApi` serves its HTTP endpoint with.
+    "aiohttp>=3.9.3",
+    "ntgcalls>=3.0.2,<4.0.0",
 ]
 license = "LGPL-3.0-or-later"
 license-files = ["COPYING", "COPYING.lesser", "NOTICE"]
@@ -57,6 +62,9 @@ keywords = [
     "mtproto",
     "api",
     "client",
+    "calls",
+    "voice-chat",
+    "video-chat",
     "library",
     "python",
 ]
@@ -196,6 +204,9 @@ extend-exclude = [
     "pyrogram/errors/exceptions",
     # A standalone CI script, not a package member: no `__init__.py` belongs next to it.
     ".github/scripts",
+    # Merged from PyTgCalls and kept in its upstream style, so a later sync stays a diff
+    #  against upstream rather than against a reformat of it.
+    "pyrogram/calls",
 ]
 
 [tool.ruff.format]
@@ -249,6 +260,8 @@ exclude = [
     "pyrogram/raw/types",
     "pyrogram/raw/all.py",
     "pyrogram/errors/exceptions",
+    # Merged from PyTgCalls; see `[tool.ruff].extend-exclude`.
+    "pyrogram/calls",
 ]
 
 [tool.ty.rules]
